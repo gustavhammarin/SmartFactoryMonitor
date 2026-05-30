@@ -1,0 +1,68 @@
+@page "/dashboard/{MachineId}"
+@using Microsoft.AspNetCore.SignalR.Client
+@using SmartFactory.Contracts.Telemetry
+
+<h3>Dashboard: @MachineId</h3>
+
+@if (connectionStatus is not null)
+{
+    <p>@connectionStatus</p>
+}
+
+@if (latest is null)
+{
+    <p>Waiting for telemetry...</p>
+}
+else
+{
+    <div>
+        <h4>@latest.MachineId</h4>
+        <p>Temperature: @latest.Temperature</p>
+        <p>Vibration: @latest.Vibration</p>
+        <p>Pressure: @latest.Pressure</p>
+        <p>Running: @latest.IsRunning</p>
+        <p>Alarm: @latest.AlarmActive</p>
+        <p>Product count: @latest.ProductCount</p>
+        <p>Received at: @latest.ReceivedAt</p>
+    </div>
+}
+
+@code{
+    [Parameter]
+    public string MachineId {get; set;} = string.Empty;
+
+    private HubConnection? hubConnection;
+    private MachineTelemetryLiveUpdate? latest;
+    private string? connectionStatus;
+
+    protected override async Task OnInitializedAsync(){
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl("http://localhost:5034/hubs/telemetry")
+            .WithAutomaticReconnect()
+            .Build();
+        
+        hubConnection.On<MachineTelemetryLiveUpdate>(
+                "TelemetryReceived",
+                telemetry => {
+                    latest = telemetry;
+                    connectionStatus = $"Last update received for {telemetry.MachineId}";
+                    InvokeAsync(StateHasChanged);
+                }
+            );
+
+        await hubConnection.StartAsync();
+        connectionStatus = "Connected to SignalR";
+
+        await hubConnection.InvokeAsync("JoinMachineGroup", MachineId);
+    }
+
+    public async ValueTask DisposeAsync(){
+        if (hubConnection is not null){
+            if (!string.IsNullOrWhiteSpace(MachineId)){
+                await hubConnection.InvokeAsync("LeaveMachineGroup", MachineId);
+            }
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+}
