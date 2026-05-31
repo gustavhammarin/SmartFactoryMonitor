@@ -30,10 +30,10 @@ else
 @code{
     [Parameter]
     public string MachineId {get; set;} = string.Empty;
-
     private HubConnection? hubConnection;
     private MachineTelemetryLiveUpdate? latest;
     private string? connectionStatus;
+    private string? _previousMachineId;
 
     protected override async Task OnInitializedAsync(){
         hubConnection = new HubConnectionBuilder()
@@ -54,8 +54,20 @@ else
         connectionStatus = "Connected to SignalR";
 
         await hubConnection.InvokeAsync("JoinMachineGroup", MachineId);
+
+        _previousMachineId = MachineId;
     }
 
+    protected override async Task OnParametersSetAsync(){
+        if (hubConnection is null) return;
+        if (!string.IsNullOrEmpty(_previousMachineId)){
+            await hubConnection.InvokeAsync("LeaveMachineGroup", _previousMachineId);
+            latest = null;
+            await hubConnection.InvokeAsync("JoinMachineGroup", MachineId);
+        }
+
+        _previousMachineId = MachineId;
+    }
     public async ValueTask DisposeAsync(){
         if (hubConnection is not null){
             if (!string.IsNullOrWhiteSpace(MachineId)){
@@ -64,5 +76,4 @@ else
             await hubConnection.DisposeAsync();
         }
     }
-
 }

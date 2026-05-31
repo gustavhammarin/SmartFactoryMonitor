@@ -18,7 +18,7 @@ namespace SmartFactory.Data.Repositories
         }
         public async Task SaveMachineTelemetryAsync(MachineTelemetryUnprocessed dto)
         {
-            await _context.AddAsync(dto.ToEntity);
+            await _context.AddAsync(dto.ToEntity());
             await _context.SaveChangesAsync();
         }
     }

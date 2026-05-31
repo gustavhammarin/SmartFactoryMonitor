@@ -51,6 +51,7 @@ coverage.opencover.xml
 *.tlh
 *.tmp_proj
 *.log
+*.vscode/
 
 # Rider / JetBrains
 .idea/

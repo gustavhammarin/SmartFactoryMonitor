@@ -1,4 +1,8 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using System.Reflection.PortableExecutable
+@using SmartFactory.Contracts.Machines
+@inject FactoryApiClient ApiClient
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">FactoryDashboard</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -9,15 +13,20 @@
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
+        @foreach (var machine in machines)
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="@($"dashboard/{machine.MachineId}")" Match="NavLinkMatch.All">
+                    <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> @machine.Name
+                </NavLink>
+            </div>
+        }
     </nav>
 </div>
 
 @code {
+
+    public IReadOnlyList<MachineResponse> machines = [];
     private bool collapseNavMenu = true;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
@@ -25,5 +34,10 @@
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        machines = await ApiClient.GetMachinesAsync();
     }
 }

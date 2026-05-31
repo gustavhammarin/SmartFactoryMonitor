@@ -17,9 +17,9 @@ namespace SmartFactory.Data.Repositories
         {
             _context = context;
         }
-        public async Task<IReadOnlyList<MachineResponse>> ListMachinesAsync()
+        public async Task<IReadOnlyList<MachineResponse>> ListMachinesAsync(CancellationToken ct)
         {
-            var entities = await _context.Machines.ToListAsync();
+            var entities = await _context.Machines.AsNoTracking().ToListAsync(ct);
             return [.. entities.Select(e => e.ToResponse())];
         }
     }

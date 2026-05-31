@@ -9,6 +9,6 @@ namespace SmartFactory.Data.Repositories
 {
     public interface IMachineRepository
     {
-        Task<IReadOnlyList<MachineResponse>> ListMachinesAsync();
+        Task<IReadOnlyList<MachineResponse>> ListMachinesAsync(CancellationToken ct);
     }
 }

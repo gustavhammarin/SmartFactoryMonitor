@@ -37,7 +37,7 @@ namespace MachineSimulator
                 machineTelemetries.Add(new MachineTelemetry
 
                 {
-                    MachineId = "press-01",
+                    MachineId = machine,
                     Temperature = Math.Round(_temperature, 2),
                     Vibration = Math.Round(_vibration, 2),
                     Pressure = Math.Round(_pressure, 2),

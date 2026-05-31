@@ -14,10 +14,9 @@ namespace TelemetryWorker
 
         private readonly MqttClientSubscribeOptions _mqttSubscribeOpts;
         private readonly ILogger<MqttService> _logger;
+        private readonly IServiceScopeFactory _scopeFactory;
 
-        private readonly IMachineTelemetryRepository _telemetryRepository;
-
-        public MqttService(ILogger<MqttService> logger, IMachineTelemetryRepository telemetryRepository)
+        public MqttService(ILogger<MqttService> logger, IServiceScopeFactory scopeFactory)
         {
             var mqttFactory = new MqttClientFactory();
             _mqttClient = mqttFactory.CreateMqttClient();
@@ -31,7 +30,8 @@ namespace TelemetryWorker
             _mqttSubscribeOpts = mqttFactory.CreateSubscribeOptionsBuilder()
                 .WithTopicFilter("factory/machines/+/telemetry")
                 .Build();
-            _telemetryRepository = telemetryRepository;
+            
+            _scopeFactory = scopeFactory;
         }
 
         public async Task ConnectAsync(CancellationToken ct)
@@ -77,7 +77,7 @@ namespace TelemetryWorker
                     return;
                 }
 
-                await SaveMachineTelemetryAsync(telemetry, topic);
+                await SaveMachineTelemetryAsync(telemetry);
 
                 _logger.LogInformation(
                     "Machine {MachineId}: Temp={Temperature}, Vibration={Vibration}, Pressure={Pressure}, Alarm={AlarmActive}",
@@ -96,9 +96,11 @@ namespace TelemetryWorker
             }
         }
 
-        private async Task SaveMachineTelemetryAsync(MachineTelemetryUnprocessed dto, string topic)
+        private async Task SaveMachineTelemetryAsync(MachineTelemetryUnprocessed dto)
         {
-            await _telemetryRepository.SaveMachineTelemetryAsync(dto);
+            using var scope = _scopeFactory.CreateAsyncScope();
+            var telemetryRepository = scope.ServiceProvider.GetRequiredService<IMachineTelemetryRepository>();
+            await telemetryRepository.SaveMachineTelemetryAsync(dto);
             await PublishProcessedTelemetryAsync(dto.ToLiveUpdate());
         }
 

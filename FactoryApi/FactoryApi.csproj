@@ -8,11 +8,16 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.8">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="MQTTnet" Version="5.1.0.1559" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../SmartFactory.Contracts/SmartFactory.Contracts.csproj" />
+    <ProjectReference Include="../SmartFactory.Data/SmartFactory.Data.csproj" />
   </ItemGroup>
 
 </Project>
