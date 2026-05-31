@@ -63,6 +63,14 @@ namespace SmartFactory.Data.Migrations
                             MachineId = "cnc-01",
                             Name = "CNC 01",
                             Type = "CNC"
+                        },
+                        new
+                        {
+                            Id = new Guid("33333333-3333-3333-3333-333333333333"),
+                            IsActive = true,
+                            MachineId = "conveyor-01",
+                            Name = "Conveyor 01",
+                            Type = "Conveyor"
                         });
                 });
 
@@ -82,27 +90,65 @@ namespace SmartFactory.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<double>("Pressure")
-                        .HasColumnType("double precision");
-
-                    b.Property<int>("ProductCount")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("SavedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<double>("Temperature")
-                        .HasColumnType("double precision");
 
                     b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<double>("Vibration")
-                        .HasColumnType("double precision");
-
                     b.HasKey("Id");
 
-                    b.ToTable("MachineTelemetries");
+                    b.ToTable((string)null);
+
+                    b.UseTpcMappingStrategy();
+                });
+
+            modelBuilder.Entity("SmartFactory.Data.Entities.CncTelemetryEntity", b =>
+                {
+                    b.HasBaseType("SmartFactory.Data.Entities.MachineTelemetryEntity");
+
+                    b.Property<double>("FeedRate")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("SpindleRpm")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("ToolWear")
+                        .HasColumnType("double precision");
+
+                    b.ToTable("CncTelemetries");
+                });
+
+            modelBuilder.Entity("SmartFactory.Data.Entities.ConveyorTelemetryEntity", b =>
+                {
+                    b.HasBaseType("SmartFactory.Data.Entities.MachineTelemetryEntity");
+
+                    b.Property<double>("BeltSpeed")
+                        .HasColumnType("double precision");
+
+                    b.Property<int>("ItemsPerMinute")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("MotorCurrent")
+                        .HasColumnType("double precision");
+
+                    b.ToTable("ConveyorTelemetries");
+                });
+
+            modelBuilder.Entity("SmartFactory.Data.Entities.HydraulicPressTelemetryEntity", b =>
+                {
+                    b.HasBaseType("SmartFactory.Data.Entities.MachineTelemetryEntity");
+
+                    b.Property<int>("CyclesPerHour")
+                        .HasColumnType("integer");
+
+                    b.Property<double>("HydraulicPressure")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("RamPosition")
+                        .HasColumnType("double precision");
+
+                    b.ToTable("HydraulicPressTelemetries");
                 });
 #pragma warning restore 612, 618
         }

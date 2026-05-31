@@ -15,40 +15,68 @@
 }
 else
 {
-    <div>
-        <h4>@latest.MachineId</h4>
-        <p>Temperature: @latest.Temperature</p>
-        <p>Vibration: @latest.Vibration</p>
-        <p>Pressure: @latest.Pressure</p>
-        <p>Running: @latest.IsRunning</p>
-        <p>Alarm: @latest.AlarmActive</p>
-        <p>Product count: @latest.ProductCount</p>
-        <p>Received at: @latest.ReceivedAt</p>
-    </div>
+    switch (@latest)
+    {
+        case CncLiveUpdate cnc:
+            <div>
+                <h4>@cnc.MachineId</h4>
+                <p>Spindle RPM: @cnc.SpindleRpm</p>
+                <p>Tool Wear: @cnc.ToolWear %</p>
+                <p>Feed Rate: @cnc.FeedRate mm/min</p>
+                <p>Running: @cnc.IsRunning</p>
+                <p>Alarm: @cnc.AlarmActive</p>
+                <p>Received at: @cnc.ReceivedAt</p>
+            </div>
+            break;
+        case HydraulicPressLiveUpdate press:
+            <div>
+                <h4>@press.MachineId</h4>
+                <p>Hydraulic Pressure: @press.HydraulicPressure bar</p>
+                <p>Ram Position: @press.RamPosition mm</p>
+                <p>Cycles/h: @press.CyclesPerHour</p>
+                <p>Running: @press.IsRunning</p>
+                <p>Alarm: @press.AlarmActive</p>
+                <p>Received at: @press.ReceivedAt</p>
+            </div>
+            break;
+        case ConveyorLiveUpdate conveyor:
+            <div>
+                <h4>@conveyor.MachineId</h4>
+                <p>Belt Speed: @conveyor.BeltSpeed m/s</p>
+                <p>Items/min: @conveyor.ItemsPerMinute</p>
+                <p>Motor Current: @conveyor.MotorCurrent A</p>
+                <p>Running: @conveyor.IsRunning</p>
+                <p>Alarm: @conveyor.AlarmActive</p>
+                <p>Received at: @conveyor.ReceivedAt</p>
+            </div>
+            break;
+    }
 }
 
-@code{
+@code {
     [Parameter]
-    public string MachineId {get; set;} = string.Empty;
+    public string MachineId { get; set; } = string.Empty;
     private HubConnection? hubConnection;
     private MachineTelemetryLiveUpdate? latest;
     private string? connectionStatus;
     private string? _previousMachineId;
 
-    protected override async Task OnInitializedAsync(){
+    protected override async Task OnInitializedAsync()
+    {
         hubConnection = new HubConnectionBuilder()
             .WithUrl("http://localhost:5034/hubs/telemetry")
             .WithAutomaticReconnect()
             .Build();
-        
+
         hubConnection.On<MachineTelemetryLiveUpdate>(
-                "TelemetryReceived",
-                telemetry => {
-                    latest = telemetry;
-                    connectionStatus = $"Last update received for {telemetry.MachineId}";
-                    InvokeAsync(StateHasChanged);
-                }
-            );
+                        "TelemetryReceived",
+                        telemetry =>
+                        {
+                            latest = telemetry;
+                            connectionStatus = $"Last update received for {telemetry.MachineId}";
+                            InvokeAsync(StateHasChanged);
+                        }
+                    );
 
         await hubConnection.StartAsync();
         connectionStatus = "Connected to SignalR";
@@ -58,9 +86,11 @@ else
         _previousMachineId = MachineId;
     }
 
-    protected override async Task OnParametersSetAsync(){
+    protected override async Task OnParametersSetAsync()
+    {
         if (hubConnection is null) return;
-        if (!string.IsNullOrEmpty(_previousMachineId)){
+        if (!string.IsNullOrEmpty(_previousMachineId))
+        {
             await hubConnection.InvokeAsync("LeaveMachineGroup", _previousMachineId);
             latest = null;
             await hubConnection.InvokeAsync("JoinMachineGroup", MachineId);
@@ -68,9 +98,12 @@ else
 
         _previousMachineId = MachineId;
     }
-    public async ValueTask DisposeAsync(){
-        if (hubConnection is not null){
-            if (!string.IsNullOrWhiteSpace(MachineId)){
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            if (!string.IsNullOrWhiteSpace(MachineId))
+            {
                 await hubConnection.InvokeAsync("LeaveMachineGroup", MachineId);
             }
             await hubConnection.DisposeAsync();

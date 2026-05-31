@@ -1,19 +1,49 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace SmartFactory.Contracts.Telemetry
 {
-    public record MachineTelemetryLiveUpdate(
+    [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+    [JsonDerivedType(typeof(CncLiveUpdate), "cnc")]
+    [JsonDerivedType(typeof(HydraulicPressLiveUpdate), "press")]
+    [JsonDerivedType(typeof(ConveyorLiveUpdate), "conveyor")]
+    public abstract record MachineTelemetryLiveUpdate(
         string MachineId,
-        double Temperature,
-        double Vibration,
-        double Pressure,
         bool IsRunning,
-        int ProductCount,
         bool AlarmActive,
         DateTimeOffset Timestamp,
         DateTimeOffset ReceivedAt
     );
+
+    public record CncLiveUpdate(
+        string MachineId,
+        bool IsRunning,
+        bool AlarmActive,
+        DateTimeOffset Timestamp,
+        DateTimeOffset ReceivedAt,
+        double SpindleRpm,
+        double ToolWear,
+        double FeedRate
+    ) : MachineTelemetryLiveUpdate(MachineId, IsRunning, AlarmActive, Timestamp, ReceivedAt);
+
+    public record HydraulicPressLiveUpdate(
+        string MachineId,
+        bool IsRunning,
+        bool AlarmActive,
+        DateTimeOffset Timestamp,
+        DateTimeOffset ReceivedAt,
+        double HydraulicPressure,
+        double RamPosition,
+        int CyclesPerHour
+    ) : MachineTelemetryLiveUpdate(MachineId, IsRunning, AlarmActive, Timestamp, ReceivedAt);
+
+    public record ConveyorLiveUpdate(
+        string MachineId,
+        bool IsRunning,
+        bool AlarmActive,
+        DateTimeOffset Timestamp,
+        DateTimeOffset ReceivedAt,
+        double BeltSpeed,
+        int ItemsPerMinute,
+        double MotorCurrent
+    ) : MachineTelemetryLiveUpdate(MachineId, IsRunning, AlarmActive, Timestamp, ReceivedAt);
 }
