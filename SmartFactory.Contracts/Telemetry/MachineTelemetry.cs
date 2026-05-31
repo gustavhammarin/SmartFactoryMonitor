@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace SmartFactory.Contracts.Telemetry
 {
-    public record MachineTelemetryUnprocessed(
+    public record MachineTelemetry(
       string MachineId,
       double Temperature,
       double Vibration,

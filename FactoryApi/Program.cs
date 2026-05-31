@@ -1,5 +1,7 @@
 using FactoryApi.Hubs;
 using FactoryApi.Services;
+using Microsoft.AspNetCore.SignalR;
+using SmartFactory.Contracts.Telemetry;
 using SmartFactory.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +37,12 @@ app.MapGet("api/machines", async (IMachineService service, CancellationToken ct)
 {
     var machines = await service.GetAllMachinesAsync(ct);
     return Results.Ok(machines);
+});
+
+app.MapPost("internal/telemetry", async (MachineTelemetryLiveUpdate liveUpdate, IHubContext<TelemetryHub> hub) =>
+{
+    await hub.Clients.Group(liveUpdate.MachineId).SendAsync("TelemetryReceived", liveUpdate);
+    return Results.NoContent();
 });
 
 app.UseCors("BlazorClient");

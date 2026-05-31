@@ -5,7 +5,7 @@ namespace SmartFactory.Data.Mappings
 {
     public static class MachineTelemetryMappings
     {
-        public static MachineTelemetryEntity ToEntity(this MachineTelemetryUnprocessed dto) => new MachineTelemetryEntity
+        public static MachineTelemetryEntity ToEntity(this MachineTelemetry dto) => new MachineTelemetryEntity
         {
             MachineId = dto.MachineId,
             Temperature = dto.Temperature,
@@ -17,7 +17,7 @@ namespace SmartFactory.Data.Mappings
             Timestamp = dto.Timestamp
         };
 
-        public static MachineTelemetryLiveUpdate ToLiveUpdate(this MachineTelemetryUnprocessed up) => new MachineTelemetryLiveUpdate(
+        public static MachineTelemetryLiveUpdate ToLiveUpdate(this MachineTelemetry up) => new MachineTelemetryLiveUpdate(
             up.MachineId,
             up.Temperature,
             up.Vibration,

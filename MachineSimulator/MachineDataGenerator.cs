@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SmartFactory.Contracts.Telemetry;
 
 namespace MachineSimulator
 {
@@ -36,16 +37,16 @@ namespace MachineSimulator
 
                 machineTelemetries.Add(new MachineTelemetry
 
-                {
-                    MachineId = machine,
-                    Temperature = Math.Round(_temperature, 2),
-                    Vibration = Math.Round(_vibration, 2),
-                    Pressure = Math.Round(_pressure, 2),
-                    IsRunning = isRunning,
-                    ProductCount = _productCount,
-                    AlarmActive = alarmActive,
-                    Timestamp = DateTimeOffset.UtcNow
-                });
+                (
+                    MachineId: machine,
+                    Temperature: Math.Round(_temperature, 2),
+                    Vibration: Math.Round(_vibration, 2),
+                    Pressure: Math.Round(_pressure, 2),
+                    IsRunning: isRunning,
+                    ProductCount: _productCount,
+                    AlarmActive: alarmActive,
+                    Timestamp: DateTimeOffset.UtcNow
+                ));
             }
             return machineTelemetries.AsReadOnly();
         }

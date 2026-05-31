@@ -15,8 +15,9 @@ namespace TelemetryWorker
         private readonly MqttClientSubscribeOptions _mqttSubscribeOpts;
         private readonly ILogger<MqttService> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly FactoryApiClient _factoryApiClient;
 
-        public MqttService(ILogger<MqttService> logger, IServiceScopeFactory scopeFactory)
+        public MqttService(ILogger<MqttService> logger, IServiceScopeFactory scopeFactory, FactoryApiClient factoryApiClient)
         {
             var mqttFactory = new MqttClientFactory();
             _mqttClient = mqttFactory.CreateMqttClient();
@@ -32,6 +33,7 @@ namespace TelemetryWorker
                 .Build();
             
             _scopeFactory = scopeFactory;
+            _factoryApiClient = factoryApiClient;
         }
 
         public async Task ConnectAsync(CancellationToken ct)
@@ -64,7 +66,7 @@ namespace TelemetryWorker
 
             try
             {
-                var telemetry = JsonSerializer.Deserialize<MachineTelemetryUnprocessed>(
+                var telemetry = JsonSerializer.Deserialize<MachineTelemetry>(
                     payload,
                     new JsonSerializerOptions
                     {
@@ -96,7 +98,7 @@ namespace TelemetryWorker
             }
         }
 
-        private async Task SaveMachineTelemetryAsync(MachineTelemetryUnprocessed dto)
+        private async Task SaveMachineTelemetryAsync(MachineTelemetry dto)
         {
             using var scope = _scopeFactory.CreateAsyncScope();
             var telemetryRepository = scope.ServiceProvider.GetRequiredService<IMachineTelemetryRepository>();
@@ -106,14 +108,7 @@ namespace TelemetryWorker
 
         private async Task PublishProcessedTelemetryAsync(MachineTelemetryLiveUpdate liveUpdate)
         {
-            var json = JsonSerializer.Serialize(liveUpdate);
-
-            var message = new MqttApplicationMessageBuilder()
-                .WithTopic($"factory/machines/{liveUpdate.MachineId}/telemetry/processed")
-                .WithPayload(json)
-                .Build();
-
-            await _mqttClient.PublishAsync(message);
+            await _factoryApiClient.PushLiveUpdate(liveUpdate);
 
             _logger.LogInformation(
             "Published processed telemetry event for machine {MachineId}",

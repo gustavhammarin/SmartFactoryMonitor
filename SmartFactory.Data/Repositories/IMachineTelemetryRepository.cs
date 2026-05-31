@@ -9,6 +9,6 @@ namespace SmartFactory.Data.Repositories
 {
     public interface IMachineTelemetryRepository
     {
-        Task SaveMachineTelemetryAsync(MachineTelemetryUnprocessed dto);
+        Task SaveMachineTelemetryAsync(MachineTelemetry dto);
     }
 }

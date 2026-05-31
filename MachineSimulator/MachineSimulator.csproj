@@ -11,4 +11,8 @@
     <PackageReference Include="MQTTnet" Version="5.1.0.1559" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../SmartFactory.Contracts/SmartFactory.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>
