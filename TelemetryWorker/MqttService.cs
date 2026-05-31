@@ -82,12 +82,8 @@ namespace TelemetryWorker
                 await SaveMachineTelemetryAsync(telemetry);
 
                 _logger.LogInformation(
-                    "Machine {MachineId}: Temp={Temperature}, Vibration={Vibration}, Pressure={Pressure}, Alarm={AlarmActive}",
-                    telemetry.MachineId,
-                    telemetry.Temperature,
-                    telemetry.Vibration,
-                    telemetry.Pressure,
-                    telemetry.AlarmActive
+                    "Machine {MachineId}: Alarm={AlarmActive} IsRunning={IsRunning}",
+                    telemetry.MachineId, telemetry.AlarmActive, telemetry.IsRunning
                 );
                 await Task.CompletedTask;
             }
